@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { fetchShowDetails, fetchShowRecommendations } from '../../api/tmdb';
+import DetailsOverlay from '../DetailsOverlay/DetailsOverlay';
 
 export default function GraphWrapper() {
   const fgRef = useRef();
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const [selectedShow, setSelectedShow] = useState(null);
 
   useEffect(() => {
     const loadSeedData = async () => {
@@ -49,10 +51,24 @@ export default function GraphWrapper() {
     }
   }, [graphData]);
 
-  const handleNodeClick = useCallback((node) => {
+  const handleNodeClick = useCallback(async (node) => {
     if (fgRef.current) {
       fgRef.current.centerAt(node.x, node.y, 1000);
       fgRef.current.zoom(6, 1000);
+    }
+
+    try {
+      const fullDetails = await fetchShowDetails(node.id);
+      setSelectedShow(fullDetails);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  const handleCloseOverlay = useCallback(() => {
+    setSelectedShow(null);
+    if (fgRef.current) {
+      fgRef.current.zoomToFit(1000, 50);
     }
   }, []);
 
@@ -86,11 +102,14 @@ export default function GraphWrapper() {
   }, []);
 
   return (
-    <ForceGraph2D
-      ref={fgRef}
-      graphData={graphData}
-      nodeCanvasObject={renderNode}
-      onNodeClick={handleNodeClick}
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <ForceGraph2D
+        ref={fgRef}
+        graphData={graphData}
+        nodeCanvasObject={renderNode}
+        onNodeClick={handleNodeClick}
+      />
+      <DetailsOverlay show={selectedShow} onClose={handleCloseOverlay} />
+    </div>
   );
 }
