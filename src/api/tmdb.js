@@ -36,3 +36,19 @@ export const fetchShowRecommendations = async (showId) => {
     posterPath: show.poster_path
   }));
 };
+
+export const searchShow = async (query) => {
+  const response = await fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to search show');
+  }
+  
+  const data = await response.json();
+  
+  if (data.results.length === 0) {
+    throw new Error('No shows found');
+  }
+  
+  return data.results[0].id;
+};
