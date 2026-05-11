@@ -1,6 +1,6 @@
 import './DetailsOverlay.css';
 
-export default function DetailsOverlay({ show, onClose }) {
+export default function DetailsOverlay({ show, onClose, onExplore }) {
   if (!show) return null;
 
   return (
@@ -31,6 +31,10 @@ export default function DetailsOverlay({ show, onClose }) {
         <strong>Starring: </strong>
         <span>{show.mainCast?.map(c => c.name).join(', ')}</span>
       </div>
+
+      <button className="explore-button" onClick={() => onExplore(show.id)}>
+        Explore This Web
+      </button>
     </div>
   );
 }

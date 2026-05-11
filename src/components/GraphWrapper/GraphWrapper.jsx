@@ -4,6 +4,7 @@ import { fetchShowDetails, fetchShowRecommendations, searchShow } from '../../ap
 import DetailsOverlay from '../DetailsOverlay/DetailsOverlay';
 import SearchBar from '../SearchBar/SearchBar';
 import Loader from '../Loader/Loader';
+import NavigationBar from '../NavigationBar/NavigationBar';
 import { getGenreColor } from '../../utils/genreColors';
 
 export default function GraphWrapper() {
@@ -13,6 +14,9 @@ export default function GraphWrapper() {
   const [isLoading, setIsLoading] = useState(true);
   const [hoverNode, setHoverNode] = useState(null);
   const [currentMediaType, setCurrentMediaType] = useState('tv');
+  
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   const loadGraphData = useCallback(async (seedId, mediaType) => {
     setIsLoading(true);
@@ -45,6 +49,12 @@ export default function GraphWrapper() {
 
       setGraphData({ nodes, links });
       setSelectedShow(null);
+      
+      if (fgRef.current) {
+        setTimeout(() => {
+          fgRef.current.zoomToFit(1000, 50);
+        }, 100);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -53,7 +63,12 @@ export default function GraphWrapper() {
   }, []);
 
   useEffect(() => {
-    loadGraphData(66732, 'tv');
+    const initializeApp = async () => {
+      await loadGraphData(66732, 'tv');
+      setHistory([{ id: 66732, type: 'tv' }]);
+      setHistoryIndex(0);
+    };
+    initializeApp();
   }, [loadGraphData]);
 
   useEffect(() => {
@@ -84,18 +99,44 @@ export default function GraphWrapper() {
     }
   }, []);
 
+  const addToHistory = useCallback((id, type) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push({ id, type });
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [history, historyIndex]);
+
   const handleSearch = useCallback(async (query, type) => {
     try {
       const newSeedId = await searchShow(query, type);
       await loadGraphData(newSeedId, type);
-      if (fgRef.current) {
-        fgRef.current.zoomToFit(1000, 50);
-      }
+      addToHistory(newSeedId, type);
     } catch (error) {
       console.error(error);
       alert('Media not found. Please try another search.');
     }
-  }, [loadGraphData]);
+  }, [loadGraphData, addToHistory]);
+
+  const handleExploreWeb = useCallback(async (id) => {
+    await loadGraphData(id, currentMediaType);
+    addToHistory(id, currentMediaType);
+  }, [currentMediaType, loadGraphData, addToHistory]);
+
+  const handleGoBack = useCallback(() => {
+    if (historyIndex > 0) {
+      const prev = history[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      loadGraphData(prev.id, prev.type);
+    }
+  }, [history, historyIndex, loadGraphData]);
+
+  const handleGoForward = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      const next = history[historyIndex + 1];
+      setHistoryIndex(historyIndex + 1);
+      loadGraphData(next.id, next.type);
+    }
+  }, [history, historyIndex, loadGraphData]);
 
   const handleNodeHover = useCallback((node) => {
     setHoverNode(node ? node.id : null);
@@ -147,6 +188,12 @@ export default function GraphWrapper() {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {isLoading && <Loader />}
+      <NavigationBar 
+        onBack={handleGoBack} 
+        onForward={handleGoForward} 
+        canGoBack={historyIndex > 0} 
+        canGoForward={historyIndex < history.length - 1} 
+      />
       <SearchBar onSearch={handleSearch} />
       <ForceGraph2D
         ref={fgRef}
@@ -156,7 +203,11 @@ export default function GraphWrapper() {
         onNodeHover={handleNodeHover}
         linkColor={() => 'rgba(255, 255, 255, 0.2)'}
       />
-      <DetailsOverlay show={selectedShow} onClose={handleCloseOverlay} />
+      <DetailsOverlay 
+        show={selectedShow} 
+        onClose={handleCloseOverlay} 
+        onExplore={handleExploreWeb}
+      />
     </div>
   );
 }
