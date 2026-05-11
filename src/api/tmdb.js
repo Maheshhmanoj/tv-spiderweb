@@ -16,6 +16,7 @@ export const fetchShowDetails = async (id, type = 'tv') => {
     posterPath: data.poster_path,
     synopsis: data.overview,
     genres: data.genres,
+    genreId: data.genres && data.genres.length > 0 ? data.genres[0].id : null,
     language: data.original_language,
     mainCast: data.credits?.cast?.slice(0, 5) || []
   };
@@ -33,7 +34,8 @@ export const fetchShowRecommendations = async (id, type = 'tv') => {
   return data.results.map(item => ({
     id: item.id,
     title: item.name || item.title,
-    posterPath: item.poster_path
+    posterPath: item.poster_path,
+    genreId: item.genre_ids && item.genre_ids.length > 0 ? item.genre_ids[0] : null
   }));
 };
 

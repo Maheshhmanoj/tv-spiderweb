@@ -4,6 +4,7 @@ import { fetchShowDetails, fetchShowRecommendations, searchShow } from '../../ap
 import DetailsOverlay from '../DetailsOverlay/DetailsOverlay';
 import SearchBar from '../SearchBar/SearchBar';
 import Loader from '../Loader/Loader';
+import { getGenreColor } from '../../utils/genreColors';
 
 export default function GraphWrapper() {
   const fgRef = useRef();
@@ -25,12 +26,14 @@ export default function GraphWrapper() {
           id: seedShow.id, 
           name: seedShow.title, 
           posterPath: seedShow.posterPath,
+          genreId: seedShow.genreId,
           val: 2
         },
         ...recommendations.map(show => ({
           id: show.id,
           name: show.title,
           posterPath: show.posterPath,
+          genreId: show.genreId,
           val: 1
         }))
       ];
@@ -120,12 +123,17 @@ export default function GraphWrapper() {
     );
     ctx.fill();
 
-    ctx.strokeStyle = node.val === 2 ? '#ff4081' : '#4fc3f7';
+    const nodeColor = getGenreColor(node.genreId);
+    
+    ctx.strokeStyle = nodeColor;
+    
     if (hoverNode === node.id) {
       ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3 / globalScale;
+    } else {
+      ctx.lineWidth = (node.val === 2 ? 3 : 1.5) / globalScale;
     }
     
-    ctx.lineWidth = 1.5 / globalScale;
     ctx.stroke();
 
     ctx.textAlign = 'center';
