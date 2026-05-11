@@ -5,6 +5,7 @@ import DetailsOverlay from '../DetailsOverlay/DetailsOverlay';
 import SearchBar from '../SearchBar/SearchBar';
 import Loader from '../Loader/Loader';
 import NavigationBar from '../NavigationBar/NavigationBar';
+import Starfield from '../Starfield/Starfield';
 import { getGenreColor } from '../../utils/genreColors';
 
 export default function GraphWrapper() {
@@ -185,8 +186,29 @@ export default function GraphWrapper() {
     ctx.globalAlpha = 1;
   }, [hoverNode]);
 
+  const renderPointerArea = useCallback((node, color, ctx, globalScale) => {
+    const label = node.name;
+    const fontSize = 14 / globalScale;
+    ctx.font = `${fontSize}px Sans-Serif`;
+    
+    const textWidth = ctx.measureText(label).width;
+    const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.8);
+
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(
+      node.x - bckgDimensions[0] / 2, 
+      node.y - bckgDimensions[1] / 2, 
+      bckgDimensions[0], 
+      bckgDimensions[1], 
+      4 / globalScale
+    );
+    ctx.fill();
+  }, []);
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
+      <Starfield />
       {isLoading && <Loader />}
       <NavigationBar 
         onBack={handleGoBack} 
@@ -199,6 +221,7 @@ export default function GraphWrapper() {
         ref={fgRef}
         graphData={graphData}
         nodeCanvasObject={renderNode}
+        nodePointerAreaPaint={renderPointerArea}
         onNodeClick={handleNodeClick}
         onNodeHover={handleNodeHover}
         linkColor={() => 'rgba(255, 255, 255, 0.2)'}
