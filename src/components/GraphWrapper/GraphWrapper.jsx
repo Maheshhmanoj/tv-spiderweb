@@ -3,13 +3,17 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { fetchShowDetails, fetchShowRecommendations, searchShow } from '../../api/tmdb';
 import DetailsOverlay from '../DetailsOverlay/DetailsOverlay';
 import SearchBar from '../SearchBar/SearchBar';
+import Loader from '../Loader/Loader';
 
 export default function GraphWrapper() {
   const fgRef = useRef();
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [selectedShow, setSelectedShow] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hoverNode, setHoverNode] = useState(null);
 
   const loadGraphData = useCallback(async (seedId) => {
+    setIsLoading(true);
     try {
       const seedShow = await fetchShowDetails(seedId);
       const recommendations = await fetchShowRecommendations(seedId);
@@ -38,6 +42,8 @@ export default function GraphWrapper() {
       setSelectedShow(null);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -86,7 +92,14 @@ export default function GraphWrapper() {
     }
   }, [loadGraphData]);
 
+  const handleNodeHover = useCallback((node) => {
+    setHoverNode(node ? node.id : null);
+  }, []);
+
   const renderNode = useCallback((node, ctx, globalScale) => {
+    const isDimmed = hoverNode !== null && hoverNode !== node.id;
+    ctx.globalAlpha = isDimmed ? 0.2 : 1;
+
     const label = node.name;
     const fontSize = 14 / globalScale;
     ctx.font = `${fontSize}px Sans-Serif`;
@@ -106,6 +119,10 @@ export default function GraphWrapper() {
     ctx.fill();
 
     ctx.strokeStyle = node.val === 2 ? '#ff4081' : '#4fc3f7';
+    if (hoverNode === node.id) {
+      ctx.strokeStyle = '#ffffff';
+    }
+    
     ctx.lineWidth = 1.5 / globalScale;
     ctx.stroke();
 
@@ -113,16 +130,21 @@ export default function GraphWrapper() {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffffff';
     ctx.fillText(label, node.x, node.y);
-  }, []);
+
+    ctx.globalAlpha = 1;
+  }, [hoverNode]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {isLoading && <Loader />}
       <SearchBar onSearch={handleSearch} />
       <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
         nodeCanvasObject={renderNode}
         onNodeClick={handleNodeClick}
+        onNodeHover={handleNodeHover}
+        linkColor={() => 'rgba(255, 255, 255, 0.2)'}
       />
       <DetailsOverlay show={selectedShow} onClose={handleCloseOverlay} />
     </div>
