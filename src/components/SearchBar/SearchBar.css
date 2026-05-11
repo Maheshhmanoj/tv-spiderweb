@@ -21,12 +21,24 @@
   color: #fff;
   font-size: 14px;
   outline: none;
-  width: 250px;
+  width: 200px;
   font-family: sans-serif;
 }
 
-.search-input:focus {
+.search-input:focus, .type-select:focus {
   border-color: #4fc3f7;
+}
+
+.type-select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #111;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  font-family: sans-serif;
+  cursor: pointer;
 }
 
 .search-button {

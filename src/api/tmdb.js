@@ -1,28 +1,28 @@
 const BASE_URL = 'https://api.themoviedb.org/3';
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-export const fetchShowDetails = async (showId) => {
-  const response = await fetch(`${BASE_URL}/tv/${showId}?api_key=${API_KEY}&append_to_response=credits`);
+export const fetchShowDetails = async (id, type = 'tv') => {
+  const response = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=credits`);
   
   if (!response.ok) {
-    throw new Error('Failed to fetch show details');
+    throw new Error(`Failed to fetch ${type} details`);
   }
   
   const data = await response.json();
 
   return {
     id: data.id,
-    title: data.name,
+    title: data.name || data.title,
     posterPath: data.poster_path,
     synopsis: data.overview,
     genres: data.genres,
     language: data.original_language,
-    mainCast: data.credits.cast.slice(0, 5)
+    mainCast: data.credits?.cast?.slice(0, 5) || []
   };
 };
 
-export const fetchShowRecommendations = async (showId) => {
-  const response = await fetch(`${BASE_URL}/tv/${showId}/recommendations?api_key=${API_KEY}`);
+export const fetchShowRecommendations = async (id, type = 'tv') => {
+  const response = await fetch(`${BASE_URL}/${type}/${id}/recommendations?api_key=${API_KEY}`);
   
   if (!response.ok) {
     throw new Error('Failed to fetch recommendations');
@@ -30,24 +30,24 @@ export const fetchShowRecommendations = async (showId) => {
   
   const data = await response.json();
 
-  return data.results.map(show => ({
-    id: show.id,
-    title: show.name,
-    posterPath: show.poster_path
+  return data.results.map(item => ({
+    id: item.id,
+    title: item.name || item.title,
+    posterPath: item.poster_path
   }));
 };
 
-export const searchShow = async (query) => {
-  const response = await fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+export const searchShow = async (query, type = 'tv') => {
+  const response = await fetch(`${BASE_URL}/search/${type}?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
   
   if (!response.ok) {
-    throw new Error('Failed to search show');
+    throw new Error(`Failed to search ${type}`);
   }
   
   const data = await response.json();
   
   if (data.results.length === 0) {
-    throw new Error('No shows found');
+    throw new Error('No results found');
   }
   
   return data.results[0].id;

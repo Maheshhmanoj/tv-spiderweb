@@ -11,12 +11,14 @@ export default function GraphWrapper() {
   const [selectedShow, setSelectedShow] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hoverNode, setHoverNode] = useState(null);
+  const [currentMediaType, setCurrentMediaType] = useState('tv');
 
-  const loadGraphData = useCallback(async (seedId) => {
+  const loadGraphData = useCallback(async (seedId, mediaType) => {
     setIsLoading(true);
+    setCurrentMediaType(mediaType);
     try {
-      const seedShow = await fetchShowDetails(seedId);
-      const recommendations = await fetchShowRecommendations(seedId);
+      const seedShow = await fetchShowDetails(seedId, mediaType);
+      const recommendations = await fetchShowRecommendations(seedId, mediaType);
 
       const nodes = [
         { 
@@ -48,7 +50,7 @@ export default function GraphWrapper() {
   }, []);
 
   useEffect(() => {
-    loadGraphData(66732);
+    loadGraphData(66732, 'tv');
   }, [loadGraphData]);
 
   useEffect(() => {
@@ -65,12 +67,12 @@ export default function GraphWrapper() {
     }
 
     try {
-      const fullDetails = await fetchShowDetails(node.id);
+      const fullDetails = await fetchShowDetails(node.id, currentMediaType);
       setSelectedShow(fullDetails);
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [currentMediaType]);
 
   const handleCloseOverlay = useCallback(() => {
     setSelectedShow(null);
@@ -79,16 +81,16 @@ export default function GraphWrapper() {
     }
   }, []);
 
-  const handleSearch = useCallback(async (query) => {
+  const handleSearch = useCallback(async (query, type) => {
     try {
-      const newSeedId = await searchShow(query);
-      await loadGraphData(newSeedId);
+      const newSeedId = await searchShow(query, type);
+      await loadGraphData(newSeedId, type);
       if (fgRef.current) {
         fgRef.current.zoomToFit(1000, 50);
       }
     } catch (error) {
       console.error(error);
-      alert('Show not found. Please try another search.');
+      alert('Media not found. Please try another search.');
     }
   }, [loadGraphData]);
 
