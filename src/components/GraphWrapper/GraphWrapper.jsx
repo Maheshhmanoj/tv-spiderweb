@@ -75,8 +75,8 @@ export default function GraphWrapper() {
 
   useEffect(() => {
     if (fgRef.current) {
-      fgRef.current.d3Force('charge').strength(-400);
-      fgRef.current.d3Force('link').distance(120);
+      fgRef.current.d3Force('charge').strength(-800);
+      fgRef.current.d3Force('link').distance(220);
     }
   }, [graphData]);
 
