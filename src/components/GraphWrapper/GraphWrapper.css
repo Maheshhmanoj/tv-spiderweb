@@ -1,0 +1,41 @@
+.top-control-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: rgba(20, 20, 20, 0.85);
+  padding: 10px 25px;
+  border-radius: 50px;
+  border: 1px solid #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.control-divider {
+  width: 1px;
+  height: 24px;
+  background-color: #444;
+}
+
+.github-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: #666;
+  text-decoration: none;
+  font-family: sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.github-footer:hover {
+  color: #fff;
+}

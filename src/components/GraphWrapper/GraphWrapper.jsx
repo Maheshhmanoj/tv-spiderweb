@@ -7,6 +7,7 @@ import Loader from '../Loader/Loader';
 import NavigationBar from '../NavigationBar/NavigationBar';
 import Starfield from '../Starfield/Starfield';
 import { getGenreColor } from '../../utils/genreColors';
+import './GraphWrapper.css';
 
 export default function GraphWrapper() {
   const fgRef = useRef();
@@ -210,13 +211,18 @@ export default function GraphWrapper() {
     <div style={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
       <Starfield />
       {isLoading && <Loader />}
-      <NavigationBar 
-        onBack={handleGoBack} 
-        onForward={handleGoForward} 
-        canGoBack={historyIndex > 0} 
-        canGoForward={historyIndex < history.length - 1} 
-      />
-      <SearchBar onSearch={handleSearch} />
+      
+      <div className="top-control-bar">
+        <NavigationBar 
+          onBack={handleGoBack} 
+          onForward={handleGoForward} 
+          canGoBack={historyIndex > 0} 
+          canGoForward={historyIndex < history.length - 1} 
+        />
+        <div className="control-divider"></div>
+        <SearchBar onSearch={handleSearch} />
+      </div>
+
       <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
@@ -231,6 +237,15 @@ export default function GraphWrapper() {
         onClose={handleCloseOverlay} 
         onExplore={handleExploreWeb}
       />
+
+      <a 
+        href="https://github.com/Maheshhmanoj" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="github-footer"
+      >
+        @Maheshhmanoj
+      </a>
     </div>
   );
 }
